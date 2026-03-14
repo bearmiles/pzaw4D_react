@@ -9,11 +9,13 @@ function App() {
   const tasks = useRef();
   const new_task = useRef();
   const [adding, setAdding] = useState(false);
-  const [dodajTask, setDodajTask] = useState(false);
-
+  const [dodajTask, setDodajTask] = useState(null);
+  const checbox = useRef();
 
   const dodajTaska = async (title) => {
-    setDodajTask(!dodajTask);
+
+    if(!new_task.current) return;
+
     const response = await fetch('http://localhost:8000/update', {
       method: 'POST',
       headers:{
@@ -24,9 +26,29 @@ function App() {
         "title" : title
       })
   })
-  const data = await response.json();
+    const data = await response.json();
+    setDane(data);
+    setDodajTask(null);
 
   }
+
+ const isChecked = async (title, task_title, checked) => {
+
+  const response = await fetch("http://localhost:8000/zmien-checked", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      title: title,
+      task_title: task_title,
+      isChecked: checked
+    })
+  })
+
+  const data = await response.json();
+  setDane(data);
+}
 
   const onSubmit = async () => {
       const response = await fetch('http://localhost:8000/dodaj', {
@@ -41,7 +63,8 @@ function App() {
 
      const data = await response.json();
      console.log(data);
-
+    
+     window.location.reload(false);
   }
 
   useEffect(() => {
@@ -86,7 +109,7 @@ function App() {
             
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">{u.title}</h5>
-              <button className='btn btn-warning' onClick={dodajTaska}>Dodaj Task</button>
+              <button className='btn btn-warning' onClick={()=> setDodajTask(u.title)}>Dodaj Task</button>
             </div>
 
             <ul className="list-group list-group-flush">
@@ -97,18 +120,41 @@ function App() {
                 </li>
               ) : (
                 u.tasks.map((t, j) => (
-                  <li className="list-group-item d-flex justify-content-between align-items-center" key={j}>
+                  t.isChecked ? (
+                    <>
+                    <li className="list-group-item d-flex justify-content-between align-items-center bg-success" key={j}>
                     {t.task_title}
-                    {t.isChecked && (
-                      <span className="badge bg-success">✔</span>
-                    )}
-                  </li>
-                  
+                    <input type='checkbox' checked={t.isChecked} onChange={(e) => isChecked(u.title, t.task_title, e.target.checked)} />
+                    </li>
+                    </>
+                  ) : (
+                    <>
+                    <li className="list-group-item d-flex justify-content-between align-items-center" key={j}>
+                    {t.task_title}
+                    <input type='checkbox' checked={t.isChecked} onChange={(e) => isChecked(u.title, t.task_title, e.target.checked)} />
+                    </li>
+                    </>
+                  )
                 ))
               )}
             </ul>
-                  {dodajTask == true && 
-                    <input type='text' placeholder='wprowadz nazwe taska' ref={new_task} />
+                  {dodajTask === u.title && 
+                    (
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          placeholder="wprowadz nazwe taska"
+                          ref={new_task}
+                          className="form-control"
+                        />
+                        <button
+                          className="btn btn-success mt-2"
+                          onClick={() => dodajTaska(u.title)}
+                        >
+                          Zapisz
+                        </button>
+                      </div>
+                    )
                   }
           </div>
         </div>
