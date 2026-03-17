@@ -24,9 +24,21 @@ app.get("/aktualizuj", (req,res) => {
                 return;
             }
             const jsonData = JSON.parse(data);
-            console.log(jsonData);
-            res.send(jsonData);
+            
+
+            const result = jsonData.filter((task) => {
+            return task.tasks.some((item) => item.isChecked === false);
+            })
+
+            const result2 = jsonData.filter((task) => {
+            return task.tasks.every((item) => item.isChecked === true);
+            })
+
+        const sorted_array = [...result, ...result2];
+        res.send(sorted_array);
+    
     });
+    
 })
 
 app.post("/zmien-checked", (req, res) => {
@@ -52,6 +64,16 @@ app.post("/zmien-checked", (req, res) => {
             return item;
         });
 
+        // const result = updated.filter((task) => {
+        //     return task.tasks.some((item) => item.isChecked === false);
+        // })
+
+        // const result2 = updated.filter((task) => {
+        //     task.tasks.every((item) => item.isChecked === true);
+        // })
+
+        // const sorted_array = [...result, ...result2];
+
         fs.writeFile("data.json", JSON.stringify(updated, null, 2), (err) => {
             if (err){
                 console.log("error writing file", err);
@@ -63,7 +85,6 @@ app.post("/zmien-checked", (req, res) => {
 
     });
 });
-
 
 app.post("/dodaj", (req, res) => {
     const { title } = req.body;
@@ -111,6 +132,7 @@ app.post('/update', (req, res) => {
             };
             return item
         });
+
 
         fs.writeFile("data.json", JSON.stringify(updated, null, 2), (err) => {
             if (err){

@@ -29,10 +29,10 @@ function App() {
     const data = await response.json();
     setDane(data);
     setDodajTask(null);
-
+    reload();
   }
 
- const isChecked = async (title, task_title, checked) => {
+const isChecked = async (title, task_title, checked) => {
 
   const response = await fetch("http://localhost:8000/zmien-checked", {
     method: 'POST',
@@ -48,6 +48,7 @@ function App() {
 
   const data = await response.json();
   setDane(data);
+  reload();
 }
 
   const onSubmit = async () => {
@@ -64,14 +65,20 @@ function App() {
      const data = await response.json();
      console.log(data);
     
-     window.location.reload(false);
+    //  reload();
+    window.location.reload(false);
   }
-
   useEffect(() => {
     fetch('http://localhost:8000/aktualizuj')
       .then(response => response.json())
       .then(json => setDane(json))
-  }, []);
+  }, [])
+  const reload = () => {
+    fetch('http://localhost:8000/aktualizuj')
+      .then(response => response.json())
+      .then(json => setDane(json))
+  }
+ 
 
   console.log(dane);
   console.log(dodajTask);
